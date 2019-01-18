@@ -9,16 +9,16 @@ Fraction multiply ( Fraction a, Fraction b ) {
 }
 
 Fraction reduce ( Fraction a ) {
-    if (a.num == 0 & a.den != 0){
+    if (a.num == 0 && a.den != 0){
         return (Fraction) {0,1};
     }
     
-    else if (a.den == 0 & a.num != 0)
+    else if (a.den == 0 && a.num != 0)
     {
         return (Fraction) {1,0};
     }
 
-    else if (a.num == 0 & a.den == 0){
+    else if (a.num == 0 && a.den == 0){
         return (Fraction) {0,0};
     }
     
