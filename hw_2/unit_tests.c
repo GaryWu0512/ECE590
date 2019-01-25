@@ -44,9 +44,12 @@ namespace {
         int n;
         int * b = to_set(a, 10, &n);
         ASSERT_EQ(n,7);
-        ASSERT_EQ(num_instances(b,6, 1),0);
-        ASSERT_EQ(num_instances(b,6, -9),1);
-        ASSERT_EQ(num_instances(b,6, 77),1);  
+        ASSERT_EQ(num_instances(b,7, 1),0);
+        ASSERT_EQ(num_instances(b,7, -9),1);
+        ASSERT_EQ(num_instances(b,7, 77),1);
+        ASSERT_EQ(num_instances(b,7, 6),1);
+        ASSERT_EQ(num_instances(b,7, -2),1);
+        ASSERT_EQ(num_instances(b,7, 5),1);       
         free(b);
     }
     

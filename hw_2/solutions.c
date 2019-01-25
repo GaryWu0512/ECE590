@@ -39,20 +39,27 @@ int num_instances (int *a, int length, int value){
 }
 
 int *to_set(int *a, int length, int *n){
-
     int *b = (int *) calloc(length, sizeof(int));
+    int i,j,k;
+    int index = 0;
     int *num = n;
-    int flag[1000] = { 0 };
-    int new_arr_idx = 0;
-    int i;
-    for ( i = 0; i<length; i++ ){
-        if ( flag[a[i]] == 0){
-            b[new_arr_idx] = a[i];
-            new_arr_idx++;
-            flag[a[i]] = 1;
-        }
+    int t = length;
+    for(i = 0; i < t; i++)
+    {
+        k = 0;
+       for (j = 0;j<index;j++){
+           if (a[i] == b[j]){
+               k++;
+           }
+       }
+       if (k == 0){
+           b[index] = a[i];
+           printf("%d", b[index]);
+           index++;
+       }
     }
-    *num = new_arr_idx+1;
+    *num = index;
+    //printf("k = %d",k);
     return b;
 }
 
