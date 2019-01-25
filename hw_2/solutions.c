@@ -43,8 +43,7 @@ int *to_set(int *a, int length, int *n){
     int i,j,k;
     int index = 0;
     int *num = n;
-    int t = length;
-    for(i = 0; i < t; i++)
+    for(i = 0; i < length ; i++)
     {
         k = 0;
        for (j = 0;j<index;j++){
@@ -54,7 +53,7 @@ int *to_set(int *a, int length, int *n){
        }
        if (k == 0){
            b[index] = a[i];
-           printf("%d", b[index]);
+           //printf("%d", b[index]);
            index++;
        }
     }
