@@ -4,4 +4,6 @@ build/
 html/
 latex/
 docs.config
+.gch
+.o
 ~*
