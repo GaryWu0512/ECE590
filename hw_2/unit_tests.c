@@ -52,6 +52,17 @@ namespace {
         ASSERT_EQ(num_instances(b,7, 5),1);       
         free(b);
     }
+
+    TEST(HW2,ToSet2) {
+        int a[] = { };
+        int n;
+        int * b = to_set(a, 0, &n);
+        ASSERT_EQ(n,0);
+        ASSERT_EQ(num_instances(b,0, -1),0);
+        ASSERT_EQ(num_instances(b,0, 1),0);
+        ASSERT_EQ(num_instances(b,0, 123456),0);  
+        free(b);
+    }
     
     Point negate(Point p) {
         return { -p.x, -p.y, -p.z };
