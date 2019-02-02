@@ -210,11 +210,78 @@ namespace {
         ASSERT_EQ(DynamicArray_num_arrays(), 0);
         free(a);
         free(b);
-        free(c);
+        //free(c);
         free(d);
         free(e);
         free(c);
         free(f);
+    }
+
+    TEST(DynamicArray, All3){
+        DynamicArray *a = DynamicArray_range(0, 1, 0.1);
+        DynamicArray *b = DynamicArray_range(1.1, 2, 0.1);
+        DynamicArray *c = DynamicArray_concat(a, b);
+        DynamicArray *d = DynamicArray_take(a, -3);
+        DynamicArray *e = DynamicArray_copy(b);
+        DynamicArray *f = DynamicArray_copy(b);
+        ASSERT_EQ(DynamicArray_is_valid(d), 1);
+        ASSERT_EQ(DynamicArray_num_arrays(), 6);
+        DynamicArray_destroy_all();
+        ASSERT_EQ(DynamicArray_is_valid(a), 0);
+        ASSERT_EQ(DynamicArray_num_arrays(), 0);
+        free(a);
+        free(b);
+        //free(c);
+        free(d);
+        free(e);
+        free(c);
+        free(f);
+    }
+
+    TEST(DynamicArray, All_x){
+        DynamicArray *a = DynamicArray_range(0, 1, 0.1);
+        DynamicArray *b = DynamicArray_range(1.1, 2, 0.1);
+        DynamicArray *c = DynamicArray_concat(a, b);
+        DynamicArray *d = DynamicArray_take(a, -3);
+        DynamicArray *e = DynamicArray_copy(b);
+        DynamicArray *f = DynamicArray_range(1.2, 2, 0.1);
+        DynamicArray *g = DynamicArray_range(1.3, 2, 0.1);
+        ASSERT_EQ(DynamicArray_is_valid(d), 1);
+        ASSERT_EQ(DynamicArray_num_arrays(), 7);
+        DynamicArray_destroy_all();
+        ASSERT_EQ(DynamicArray_is_valid(a), 0);
+        ASSERT_EQ(DynamicArray_num_arrays(), 0);
+        free(a);
+        free(b);
+        free(c);
+        free(d);
+        free(e);
+        free(f);
+        free(g);
+        
+    }
+
+    TEST(DynamicArray, All_y){
+        DynamicArray *a = DynamicArray_range(0, 1, 0.1);
+        DynamicArray *b = DynamicArray_range(1.1, 2, 0.1);
+        DynamicArray *c = DynamicArray_concat(a, b);
+        DynamicArray *d = DynamicArray_take(a, -3);
+        DynamicArray *e = DynamicArray_copy(b);
+        DynamicArray *f = DynamicArray_range(1.2, 2, 0.1);
+        DynamicArray *g = DynamicArray_copy(b);
+        ASSERT_EQ(DynamicArray_is_valid(d), 1);
+        ASSERT_EQ(DynamicArray_num_arrays(), 7);
+        DynamicArray_destroy_all();
+        ASSERT_EQ(DynamicArray_is_valid(a), 0);
+        ASSERT_EQ(DynamicArray_num_arrays(), 0);
+        free(a);
+        free(b);
+        free(c);
+        free(d);
+        free(e);
+        free(f);
+        free(g);
+        
     }
 
     TEST(ArbitraryArray,OfPointers) {
@@ -241,6 +308,9 @@ namespace {
         ASSERT_EQ(*ptr_b, b);
         ASSERT_NE(*ptr_a, b);
         ASSERT_NE(*ptr_b, a);
+        DynamicArray_destroy_all();
+        free(a);
+        free(b);
     }
     
     TEST(ArbitraryArray, String){
