@@ -171,8 +171,32 @@ namespace {
         free(c);
         free(d);
     }
-    
+
     TEST(DynamicArray, All){
+        DynamicArray *a = DynamicArray_range(0, 1, 0.1);
+        DynamicArray *b = DynamicArray_range(1.1, 2, 0.1);
+        DynamicArray *c = DynamicArray_concat(a, b);
+        DynamicArray *d = DynamicArray_take(a, -3);
+        DynamicArray *e = DynamicArray_copy(b);
+        DynamicArray *f = DynamicArray_copy(b);
+        DynamicArray_destroy(c);
+        DynamicArray *g = DynamicArray_copy(b);
+
+        ASSERT_EQ(DynamicArray_is_valid(d), 1);
+        ASSERT_EQ(DynamicArray_num_arrays(), 6);
+        DynamicArray_destroy_all();
+        ASSERT_EQ(DynamicArray_is_valid(f), 0);
+        ASSERT_EQ(DynamicArray_num_arrays(), 0);
+        free(a);
+        free(b);
+        free(c);
+        free(d);
+        free(e);
+        free(g);
+        free(f);
+    }
+
+    TEST(DynamicArray, All2){
         DynamicArray *a = DynamicArray_range(0, 1, 0.1);
         DynamicArray *b = DynamicArray_range(1.1, 2, 0.1);
         DynamicArray *c = DynamicArray_concat(a, b);
@@ -192,6 +216,32 @@ namespace {
         free(c);
         free(f);
     }
+
+    TEST(ArbitraryArray,OfPointers) {
+
+        // Create the array that will hold the pointers
+        ArbitraryArray * ptrs = ArbitraryArray_new(sizeof(DynamicArray *));
+
+        // Create a couple of dynamic arrays
+        DynamicArray * a = DynamicArray_new(),
+                                * b = DynamicArray_new();
+
+        // Add the dynamic arrays to the pointer array
+        ArbitraryArray_set_from_ptr(ptrs, 0, &a);
+        ArbitraryArray_set_from_ptr(ptrs, 1, &b);
+
+        // Get them back. Note that because the array contains pointers,
+        // and _get_ptr returns a pointer to a pointer, we need to cast
+        // its result as a pointer to a DynamicArray pointer.
+        DynamicArray ** ptr_a = (DynamicArray **) ArbitraryArray_get_ptr(ptrs,0);
+        DynamicArray ** ptr_b = (DynamicArray **) ArbitraryArray_get_ptr(ptrs,1);
+
+        // Check that the pointers are equal
+        ASSERT_EQ(*ptr_a, a);
+        ASSERT_EQ(*ptr_b, b);
+        ASSERT_NE(*ptr_a, b);
+        ASSERT_NE(*ptr_b, a);
+    }
     
     TEST(ArbitraryArray, String){
         Point p = {1, 2, 3}, q = {4, 5, 6};
@@ -203,4 +253,8 @@ namespace {
         ArbitraryArray_destroy(a);
         free(a);
     }
+
+   
+   
+
 }

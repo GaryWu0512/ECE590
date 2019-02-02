@@ -3,13 +3,31 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include "arbitrary_array.h"
 
 /* private functions *********************************************************/
 static int array_num = 0;
-static DynamicArray* arg[200];
+//static int t = 0;
+//static DynamicArray* arg[200];
+
+ArbitraryArray *AA = ArbitraryArray_new(100);
 
 /*static void arrang_size (){
     DynamicArray* arg[array_num+10]; 
+}*/
+/*void delect_arr (DynamicArray * da){
+    int i, delectIndex;
+    DynamicArray * delect;
+    for (i = 0 ; i<array_num; i++){
+        if(delect == arg[i]) {
+            delectIndex=i;
+        }
+    }
+    for(i=delectIndex ; i<array_num-1 ; i++){
+        arg[i]=arg[i+1];
+    }
+    //array_num = array_num-1;
+    //printf("array_num = %d", array_num);
 }*/
 
 /* Position in the buffer of the array element at position index */
@@ -59,15 +77,27 @@ DynamicArray * DynamicArray_new(void) {
     da->buffer = (double *) calloc ( da->capacity, sizeof(double) ); 
     da->origin = da->capacity / 2;
     da->end = da->origin;
-    arg[array_num] = da;
+    ArbitraryArray_set_from_ptr(AA, array_num, &da);
+    //t =t+1;
     array_num++;
     return da;
 }
 
 void DynamicArray_destroy(DynamicArray * da) {
+    int i;
+    for (i = 0; i<array_num ; i++){
+        DynamicArray ** b = (DynamicArray **) ArbitraryArray_get_ptr(AA,i);
+        if ( (*b) == da){
+            for(; i<array_num -1 ; i++ ){
+                DynamicArray ** c = (DynamicArray **) ArbitraryArray_get_ptr(AA,i+1);
+                ArbitraryArray_set_from_ptr(AA, i, c);
+            }
+        }
+    }
+
     free(da->buffer);
     da->buffer = NULL;
-    array_num = array_num -1;
+    array_num--;
     return;
 }
 
@@ -213,6 +243,7 @@ double DynamicArray_mean(const DynamicArray * da){
 double DynamicArray_median(const DynamicArray * da){
     assert(DynamicArray_size(da) > 0);
     double median, temp;
+    double temp_arr[DynamicArray_size(da)];
     int i,j,k;
     i = DynamicArray_size(da)/2;
 
@@ -220,16 +251,16 @@ double DynamicArray_median(const DynamicArray * da){
         for( k = j; k < DynamicArray_size(da); k++) {
             if( da->buffer[index_to_offset(da, j)] < da->buffer[index_to_offset(da, k)] ) {
                 temp = da->buffer[index_to_offset(da, j)];
-                da->buffer[index_to_offset(da, j)] = da->buffer[index_to_offset(da, k)];
-                da->buffer[index_to_offset(da, k)] = temp;
+                temp_arr[j] = da->buffer[index_to_offset(da, k)];
+                temp_arr[k] = temp;
             }
         }
     }
 
     if ( DynamicArray_size(da)%2 == 0 ){
-        median = (da->buffer[index_to_offset(da, i-1)]+da->buffer[index_to_offset(da, i)])/2;
+        median = (temp_arr[i-1]+temp_arr[i])/2;
     }else{
-        median = da->buffer[index_to_offset(da, i)];
+        median = temp_arr[i];
     }
     return median;
 }
@@ -273,7 +304,9 @@ DynamicArray * DynamicArray_copy(const DynamicArray * da) {
     for (i = 0; i<DynamicArray_size(da); i++){
       DynamicArray_push(db, DynamicArray_get(da, i));
     }
-    arg[array_num] = db;
+    ArbitraryArray_set_from_ptr(AA, array_num, &db);
+    //arg[array_num] = db;
+    //t = t+1;
     array_num++;
     return db;
 }
@@ -343,15 +376,20 @@ int DynamicArray_is_valid(const DynamicArray * da){
 }
 
 int DynamicArray_destroy_all(){
-    int i;
+    int i;;
     int j = array_num;
     //arrang_size ();
     //printf("the size is ", sizeof(*arg));
+    //printf("nm === %d", array_num);
     for(i = 0; i<j; i++){
-        DynamicArray *b = arg[i];
-        free(b->buffer);
-        b->buffer = NULL;
-        array_num--;
+        DynamicArray ** b = (DynamicArray **) ArbitraryArray_get_ptr(AA,i);
+        free((*b)->buffer);
+        (*b)->buffer = NULL;
         //printf("destory 1");
+        array_num--;
+        //printf("nm === %d", array_num);     
     }
+    array_num = 0;
+    //t = 0;
+    return array_num;
 }

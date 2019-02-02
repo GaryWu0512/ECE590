@@ -89,4 +89,6 @@ int DynamicArray_destroy_all();
 
 DynamicArray * DynamicArray_take(const DynamicArray * a, double b);
 
+//void delect_arr (DynamicArray * da);
+
 #endif
