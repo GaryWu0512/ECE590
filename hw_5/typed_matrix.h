@@ -31,8 +31,8 @@ public:
     TypedMatrix<double> read_matrix_csv(const string path);
     void write_matrix_csv(const TypedMatrix<double> &matrix);
 
-    int size_row()const;
-    int size_col()const;
+    int rows()const;
+    int cols()const;
 
 
 private:
@@ -42,12 +42,12 @@ private:
 };
 
 template <typename ElementType>
-int TypedMatrix<ElementType>::size_row()const {
+int TypedMatrix<ElementType>::rows()const {
      return size_r;
 }
 
 template <typename ElementType>
-int TypedMatrix<ElementType>::size_col()const {
+int TypedMatrix<ElementType>::cols()const {
      return size_c;
 }
 
@@ -103,9 +103,9 @@ TypedMatrix<ElementType>& TypedMatrix<ElementType>::operator=(const TypedMatrix<
     //std::cout << (*this).matrix[0][0] << "  " << (*this).matrix[0][0]<< "\n";
     vector<ElementType> v;
     ElementType nm;
-    for(int i = 0; i< other.size_row(); i++){
+    for(int i = 0; i< other.rows(); i++){
         v.clear();
-        for(int j = 0 ; j<other.size_col(); j++){
+        for(int j = 0 ; j<other.cols(); j++){
             nm = other.matrix[i][j];
             //std::cout<<"nm = "<<nm<<"\n";
             v.push_back(nm);
@@ -120,11 +120,11 @@ TypedMatrix<ElementType>& TypedMatrix<ElementType>::operator=(const TypedMatrix<
 
 template <typename ElementType>
 TypedMatrix<ElementType>& TypedMatrix<ElementType>::operator+=(const TypedMatrix<ElementType>& other) {
-    if ((*this).size_row() != other.size_row() || (*this).size_col() != other.size_col()) {
+    if ((*this).rows() != other.rows() || (*this).cols() != other.cols()) {
         throw std::range_error("false");
     }
-    for(int i = 0; i< (*this).size_row(); i++){
-        for(int j = 0 ; j<(*this).size_col(); j++){
+    for(int i = 0; i< (*this).rows(); i++){
+        for(int j = 0 ; j<(*this).cols(); j++){
             ElementType nm_other = other.get(i,j);
             ElementType nm_this = (*this).get(i,j);
             (*this).set(i,j,nm_other + nm_this);
@@ -135,11 +135,11 @@ TypedMatrix<ElementType>& TypedMatrix<ElementType>::operator+=(const TypedMatrix
 
 template <typename ElementType>
 TypedMatrix<ElementType>& TypedMatrix<ElementType>::operator*=(const TypedMatrix<ElementType>& other) {
-    if ((*this).size_row() != other.size_row() || (*this).size_col() != other.size_col()) {
+    if ((*this).rows() != other.rows() || (*this).cols() != other.cols()) {
         throw std::range_error("false");
     }
-    for(int i = 0; i< (*this).size_row(); i++){
-        for(int j = 0 ; j<(*this).size_col(); j++){
+    for(int i = 0; i< (*this).rows(); i++){
+        for(int j = 0 ; j<(*this).cols(); j++){
             ElementType nm_other = other.matrix[i][j];
             ElementType nm_this = (*this).get(i,j);
             (*this).set(i,j,nm_other * nm_this);
@@ -150,15 +150,15 @@ TypedMatrix<ElementType>& TypedMatrix<ElementType>::operator*=(const TypedMatrix
 
 template <typename ElementType>
 TypedMatrix<ElementType> TypedMatrix<ElementType>::operator*(const TypedMatrix<ElementType>& other) {
-    if ((*this).size_col() != other.size_row()) {
+    if ((*this).cols() != other.rows()) {
         throw std::range_error("false");
     }
     int r1,c1,r2,c2;
-    r1 = (*this).size_row();
-    c1 = (*this).size_col();
+    r1 = (*this).rows();
+    c1 = (*this).cols();
     std::cout<<r1<<c1<<"\n";
-    r2 = other.size_row();
-    c2 = other.size_col();
+    r2 = other.rows();
+    c2 = other.cols();
     std::cout<<r2<<c2<<"\n";
     ElementType new_nm;
     ElementType nm_other;
@@ -188,8 +188,8 @@ TypedMatrix<ElementType> TypedMatrix<ElementType>::operator*(const TypedMatrix<E
 template <typename ElementType>
 bool TypedMatrix<ElementType>::operator==(const TypedMatrix& other)const{
     ElementType a,b;
-    for(int i = 0; i< (*this).size_row(); i++){
-        for(int j = 0 ; j<(*this).size_col(); j++){
+    for(int i = 0; i< (*this).rows(); i++){
+        for(int j = 0 ; j<(*this).cols(); j++){
             a = (*this).get(i, j);
             b = other.matrix[i][j];
            if( a != b ){
@@ -202,15 +202,15 @@ bool TypedMatrix<ElementType>::operator==(const TypedMatrix& other)const{
 
 template <typename ElementType>
 TypedMatrix<ElementType> TypedMatrix<ElementType>::operator+(const TypedMatrix<ElementType>& other) {
-    if (size_r != other.size_row() || size_c != other.size_col()) {
+    if (size_r != other.rows() || size_c != other.cols()) {
         throw std::range_error("false");
     }
     int r1,c1,r2,c2;
     r1 = size_r;
     c1 = size_c;
 
-    r2 = other.size_row();
-    c2 = other.size_col();
+    r2 = other.rows();
+    c2 = other.cols();
     ElementType nm_other;
     ElementType nm_this;
     TypedMatrix<ElementType> b(other.size_c, other.size_r);

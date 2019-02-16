@@ -23,6 +23,9 @@ TypedMatrix<double> read_matrix_csv(const string path){
     vector<double> v;
     std::ifstream file;
     file.open(path);
+    if(file.fail()){
+        throw std::range_error("file does not exit");
+    }
     std::string line,val;
     int i,j =0;
     int col_nm = 0;
@@ -71,11 +74,11 @@ void write_matrix_csv(const TypedMatrix<double> &matrix, const string path){
     outfile.open(path);
     int i,j;
     std::string s;
-    for(i=0;i< matrix.size_row();i++)
+    for(i=0;i< matrix.rows();i++)
 	{
         s = std::to_string(matrix.get(i,0));
         outfile << matrix.get(i,0);
-		for(j=1;j<matrix.size_col();j++)
+		for(j=1;j<matrix.cols();j++)
 		{
             s = std::to_string(matrix.get(i,j));
 			outfile<<","<<s;
@@ -89,6 +92,7 @@ map<string, int> occurence_map(const string path){
     map<string, int> result;
     bool can_do = true;
     int front = 0,good=0,end=0;
+    int a;
 
     std::ifstream file;
     file.open(path);
@@ -120,17 +124,19 @@ map<string, int> occurence_map(const string path){
             }
             if (can_do == true){
                 //std::cout<<"I can do ";
-                std::cout<<"good = "<<good<<"front = "<<front<<"end"<<end<<"\n";
+                //std::cout<<"good = "<<good<<"front = "<<front<<"end"<<end<<"\n";
                 val.erase(val.begin()+end,val.end());
                 val.erase(val.begin(),val.begin()+front);
 
-                std::cout<<"n:"<<val<<"\n";
+                //std::cout<<"n:"<<val<<"\n";
                 //val.erase(0,front);
                 //val.erase(end,val.length()-end);
                 //std::cout<<"I erase ";
 
                 if(result.count(val)==1){
-                    result.insert(pair<string,int>(val,result[val]+1));
+                    std::cout<<"get in "<<val<<result[val];
+                    a = result[val];
+                    result[val] = a+1;
                 }else{
                     result[val] = 1;
                 }
