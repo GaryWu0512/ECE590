@@ -88,7 +88,7 @@ void write_matrix_csv(const TypedMatrix<double> &matrix, const string path){
 	outfile.close();
 }
 
-map<string, int> occurence_map(const string path){
+map<string, int> occurrence_map(const string path){
     map<string, int> result;
     bool can_do = true;
     int front = 0,good=0,end=0;

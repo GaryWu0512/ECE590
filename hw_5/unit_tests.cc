@@ -82,7 +82,7 @@ TEST(Question4, write_and_then_read_matrix_csv) {
 
 
 TEST(Question5, occurence_map) {
-    std::map<string, int> m = occurence_map("in.txt");
+    std::map<string, int> m = occurrence_map("in.txt");
 
     EXPECT_EQ(m["S&P"], 0); // not a valid word
     EXPECT_EQ(m["500"], 2); // numbers are ok

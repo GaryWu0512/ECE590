@@ -17,6 +17,6 @@ TypedMatrix<double> read_matrix_csv(const string path);
 
 void write_matrix_csv(const TypedMatrix<double> &matrix, const string path);
 
-std::map<string, int> occurence_map(const string path);
+std::map<string, int> occurrence_map(const string path);
 
 #endif
