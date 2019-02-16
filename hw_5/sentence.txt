@@ -1,6 +1,0 @@
-This is a sentence. Don't think of wier_d strings as words. Really, 123 is a nice number.
-'I should use double quotes'
-'I !should@ #use$ %double ^&*(quotes'
-'(I) s-hould _u[se =dou;ble+ {quo`tes]
-'<I shoul?d u/se doub\le quote|s'
-'/I sho.uld: u,se" dou>ble quo"tes'
