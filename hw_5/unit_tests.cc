@@ -58,17 +58,17 @@ namespace {
       for (double &i : v)        
         std::cout << i << " "; 
       std::cout << "\n";
-
-      sort_by_magnitude(v);
+      vector<double> c;
+      c = sort_by_magnitude(v);
 
       std::cout << "sorted: ";
-      for (double &i : v)        
+      for (double &i : c)        
         std::cout << i << " "; 
       std::cout << "\n";
 
       for(int i=0; i< 50; i++){
         double value = -1.5-i;
-        double result = v[i];
+        double result = c[i];
         EXPECT_EQ(result, value);
       }
   }

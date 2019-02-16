@@ -10,10 +10,11 @@
 using std::vector;
 using namespace std;
 
-void sort_by_magnitude(vector<double> &a){
-    std::sort(a.begin(), a.end(), [](double x, double y) { 
+vector<double> sort_by_magnitude(vector<double> &v){
+    std::sort(v.begin(), v.end(), [](double x, double y) { 
         return abs(x) < abs(y);
     });
+    return v;
 }
 
 TypedMatrix<double> read_matrix_csv(const string path){

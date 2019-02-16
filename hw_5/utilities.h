@@ -11,7 +11,7 @@
 #include "typed_matrix.h"
 using std::vector;
 
-void sort_by_magnitude(vector<double> &a);
+vector<double> sort_by_magnitude(vector<double> &v);
 
 TypedMatrix<double> read_matrix_csv(const string path);
 
