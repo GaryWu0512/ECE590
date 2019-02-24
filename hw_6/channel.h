@@ -23,6 +23,7 @@ namespace elma {
         Channel& flush(double);
 
         void change_capacity(int);
+        double latest();
         vector<double> latest(int);
 
         double earliest();

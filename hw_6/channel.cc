@@ -17,6 +17,13 @@ namespace elma {
         return *this;
     }
 
+    double Channel::latest() {
+        if ( _queue.size() == 0 ) {
+            throw std::range_error("Tried to get the latest value in an empty channel.");
+        }
+        return _queue.front();
+    }
+
     vector<double> Channel::latest( int n ) {
         //deque<double> _copy_queue;
         vector<double> result;
