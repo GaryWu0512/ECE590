@@ -1,0 +1,22 @@
+class CruiseControl : public elma::Process {
+  public:
+    CruiseControl(std::string name) : Process(name) {}
+    void init() {}
+    void start() {
+      speed = 0;
+    }
+    void update() {
+      if ( channel("Velocity").nonempty() ) {
+        speed = channel("Velocity").latest();
+      }
+      error += speed - desired_speed;
+      channel("Throttle").send(-KP*(speed - desired_speed)- KI*error);
+    }
+    void stop() {}
+  private:
+    double speed;
+    double error;
+    const double desired_speed = 50.0,
+                 KP = 0.5;
+                 KI = 0.1;
+}; 
