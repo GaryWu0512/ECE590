@@ -7,4 +7,5 @@ docs.config
 *.gch
 *.o
 *.csv
+＊txt
 ~*
