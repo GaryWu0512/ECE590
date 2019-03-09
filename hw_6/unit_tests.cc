@@ -8,9 +8,8 @@
 #include <chrono>
 
 #include "stopwatch.h"
-#include "elma.h"
 #include "random_filter.h"
-
+#include "elma.h"
 
 #define SLEEP(__ms__) std::this_thread::sleep_for(std::chrono::milliseconds(__ms__))
 #define MS(__ms__) high_resolution_clock::duration(milliseconds(__ms__))
@@ -35,6 +34,65 @@ namespace {
         EXPECT_NEAR(w.get_nanoseconds(), 150000000, 50000000);  
     }  
 
+    TEST(STOPWATCH, BASIC2){
+        Stopwatch w;
+        w.start();
+        SLEEP(120);
+        w.stop();      
+        SLEEP(100);
+        w.start();
+        SLEEP(120);
+        w.stop();   
+        EXPECT_NEAR(w.get_minutes(), 0.004, 0.0005);
+        EXPECT_NEAR(w.get_seconds(), 0.24, 0.05);
+        EXPECT_NEAR(w.get_milliseconds(), 240, 50);
+        EXPECT_NEAR(w.get_nanoseconds(), 240000000, 50000000);  
+    }
+
+    TEST(STOPWATCH, RESET2){
+        Stopwatch w;
+        w.start();
+        SLEEP(200);
+        w.stop();      
+        w.reset();
+        w.start();
+        SLEEP(120);
+        w.stop();   
+        EXPECT_NEAR(w.get_minutes(), 0.002, 0.05);
+        EXPECT_NEAR(w.get_seconds(), 0.12, 0.05);
+        EXPECT_NEAR(w.get_milliseconds(), 120, 50);
+        EXPECT_NEAR(w.get_nanoseconds(), 120000000, 50000000);  
+    }
+
+    TEST(STOPWATCH, STOP){
+        Stopwatch w;
+        w.start();
+        SLEEP(100);
+        w.stop();      
+        w.stop();          
+        w.start();
+        SLEEP(100);
+        w.stop();   
+        EXPECT_NEAR(w.get_seconds(), 0.2, 0.05);
+        EXPECT_NEAR(w.get_milliseconds(), 200, 50);
+        EXPECT_NEAR(w.get_nanoseconds(), 200000000, 50000000);  
+    }
+    TEST(STOPWATCH, START){
+        Stopwatch w;
+        w.start();
+        SLEEP(200);
+        w.stop();      
+        w.start();          
+        w.start();
+        w.start();
+        SLEEP(100);
+        w.stop();   
+        std::cout << w.get_seconds() << "\n";  // about 0.3
+        EXPECT_NEAR(w.get_seconds(), 0.3, 0.05);
+        EXPECT_NEAR(w.get_milliseconds(), 300, 50);
+        EXPECT_NEAR(w.get_nanoseconds(), 300000000, 50000000);  
+    }
+
     class Sender : public elma::Process {
       public: 
         Sender(string name, vector<double> vect) : Process(name), _data(vect.begin(), vect.end()), _idx(0) {}
@@ -49,6 +107,7 @@ namespace {
         int _idx;
         vector<double> _data;
     };
+
 
     class Receiver : public elma::Process {
       public: 
@@ -83,11 +142,79 @@ namespace {
         .init();
         for(int i=0; i<ans.size(); i++){
             m.run(MS(20));
-            EXPECT_DOUBLE_EQ(receiver.sum(), ans[i]);
+            EXPECT_NEAR(receiver.sum(), ans[i], 0.1);
         }
     }
 
-    TEST(CAPACITY, BASIC){
+    TEST(LATEST, BASIC2){
+        vector<double> ans{1, 3, 5, 7, 9, 11, 13, 15, 17, 19};
+        elma::Manager m;
+        Sender sender("sender", vector<double>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+        Receiver receiver("receiver", 2);
+        elma::Channel data("Data");
+
+        m.schedule(sender, MS(10))
+        .schedule(receiver, MS(10))
+        .add_channel(data)
+        .init();
+        for(int i=0; i<ans.size(); i++){
+            m.run(MS(20));
+            EXPECT_NEAR(receiver.sum(), ans[i], 0.1);
+        }
+    }
+
+    TEST(LATEST, BASIC3){
+        vector<double> ans{1, 2, 3, 5, 8, 13, 21, 34, 55, 89};
+        elma::Manager m;
+        Sender sender("sender", vector<double>{1, 1, 2, 3, 5, 8, 13, 21, 34, 55});
+        Receiver receiver("receiver", 2);
+        elma::Channel data("Data");
+
+        m.schedule(sender, MS(10))
+        .schedule(receiver, MS(10))
+        .add_channel(data)
+        .init();
+        for(int i=0; i<ans.size(); i++){
+            m.run(MS(20));
+            EXPECT_NEAR(receiver.sum(), ans[i], 0.1);
+        }
+    }
+
+    TEST(LATEST, BASIC4){
+        vector<double> ans{6, 29, 103, 105, 156};
+        elma::Manager m;
+        Sender sender("sender", vector<double>{6, 23, 74, 2, 51});
+        Receiver receiver("receiver", 5);
+        elma::Channel data("Data");
+
+        m.schedule(sender, MS(10))
+        .schedule(receiver, MS(10))
+        .add_channel(data)
+        .init();
+        for(int i=0; i<ans.size(); i++){
+            m.run(MS(20));
+            EXPECT_NEAR(receiver.sum(), ans[i], 0.1);
+        }
+    }
+
+    TEST(LATEST, BASIC5){
+        vector<double> ans{-3, -5, -6, -6, -5, -3, 0, 4, 9};
+        elma::Manager m;
+        Sender sender("sender", vector<double>{-3, -2, -1, 0, 1, 2, 3, 4, 5});
+        Receiver receiver("receiver", 9);
+        elma::Channel data("Data");
+
+        m.schedule(sender, MS(10))
+        .schedule(receiver, MS(10))
+        .add_channel(data)
+        .init();
+        for(int i=0; i<ans.size(); i++){
+            m.run(MS(20));
+            EXPECT_NEAR(receiver.sum(), ans[i], 0.1);
+        }
+    }
+
+    TEST(CHANNEL, CAPACITY1){
         elma::Manager m;
         Sender sender("sender", vector<double>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
         elma::Channel data("Data");
@@ -97,13 +224,96 @@ namespace {
         .init()
         .run(MS(110))
         .stop();
-        EXPECT_DOUBLE_EQ(m.channel("Data").earliest(), 1);
-        m.channel("Data").change_capacity(5);
-        EXPECT_DOUBLE_EQ(m.channel("Data").earliest(), 6);
+        EXPECT_NEAR(m.channel("Data").earliest(), 1, 0.1);
+        m.channel("Data").change_capacity(5); // channel = {6, 7, 8, 9, 10}
+        EXPECT_NEAR(m.channel("Data").earliest(), 6, 0.1);
         EXPECT_EQ(m.channel("Data").capacity(), 5);
     }
 
-    TEST(RANDOM_FILTER, BASIC){
+    TEST(CHANNEL, CAPACITY2){
+        elma::Manager m;
+        Sender sender("sender", vector<double>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+        elma::Channel data("Data");
+
+        m.schedule(sender, MS(10))
+        .add_channel(data)
+        .init()
+        .run(MS(110))
+        .stop();
+        EXPECT_NEAR(m.channel("Data").earliest(), 1, 0.1);
+        m.channel("Data").change_capacity(1000);  // channel = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+        EXPECT_NEAR(m.channel("Data").earliest(), 1, 0.1);
+        EXPECT_EQ(m.channel("Data").capacity(), 1000);
+    }
+
+    TEST(CHANNEL, CAPACITY3){
+        elma::Manager m;
+        Sender sender("sender", {1, 1, 2, 3, 5, 8, 13, 21, 34, 55});
+        elma::Channel data("Data");
+
+        m.schedule(sender, MS(10))
+        .add_channel(data)
+        .init()
+        .run(MS(110))
+        .stop();
+        EXPECT_NEAR(m.channel("Data").earliest(), 1, 0.1);
+        m.channel("Data").change_capacity(8);  // channel = {2, 3, 5, 8, 13, 21, 34, 55}
+        EXPECT_NEAR(m.channel("Data").earliest(), 2, 0.1);
+        EXPECT_EQ(m.channel("Data").capacity(), 8);
+        m.channel("Data").change_capacity(10); // channel = {2, 3, 5, 8, 13, 21, 34, 55, null, null}
+        EXPECT_NEAR(m.channel("Data").earliest(), 2, 0.1);
+        EXPECT_EQ(m.channel("Data").capacity(), 10);        
+    }
+
+    
+    TEST(CHANNEL, CAPACITY4){
+        elma::Manager m;
+        Sender sender("sender", vector<double>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+        elma::Channel data("Data");
+
+        m.schedule(sender, MS(10))
+        .add_channel(data)
+        .init()
+        .run(MS(110))
+        .stop();
+        EXPECT_NEAR(m.channel("Data").earliest(), 1, 0.1);
+        m.channel("Data").change_capacity(8);  // channel = {3, 4, 5, 6, 7, 8, 9, 10}
+        EXPECT_NEAR(m.channel("Data").earliest(), 3, 0.1);
+        EXPECT_EQ(m.channel("Data").capacity(), 8);
+        m.channel("Data").change_capacity(6);  // channel = {5, 6, 7, 8, 9, 10}
+        EXPECT_NEAR(m.channel("Data").earliest(), 5, 0.1);
+        EXPECT_EQ(m.channel("Data").capacity(), 6);
+        m.channel("Data").change_capacity(4);  // channel = {7, 8, 9, 10}
+        EXPECT_NEAR(m.channel("Data").earliest(), 7, 0.1);
+        EXPECT_EQ(m.channel("Data").capacity(), 4);
+        m.channel("Data").change_capacity(1);  // channel = {10}
+        EXPECT_NEAR(m.channel("Data").earliest(), 10, 0.1);
+        EXPECT_EQ(m.channel("Data").capacity(), 1);
+    }
+    
+    TEST(CHANNEL, CAPACITY5){
+        elma::Manager m;
+        Sender sender("sender", vector<double>{1, 2, 3, 4, 5});
+        elma::Channel data("Data");
+
+        m.schedule(sender, MS(10))
+        .add_channel(data)
+        .init()
+        .run(MS(60))
+        .stop();
+        EXPECT_NEAR(m.channel("Data").earliest(), 1, 0.1);
+        m.channel("Data").change_capacity(10);  // channel = {1,2,3,4,5}
+        EXPECT_NEAR(m.channel("Data").earliest(), 1, 0.1);
+        EXPECT_EQ(m.channel("Data").capacity(), 10);
+        m.channel("Data").change_capacity(3);   // channel = {3,4,5}
+        EXPECT_NEAR(m.channel("Data").earliest(), 3, 0.1);
+        EXPECT_EQ(m.channel("Data").capacity(), 3);
+        m.channel("Data").change_capacity(15);  // channel = {3,4,5}
+        EXPECT_NEAR(m.channel("Data").earliest(), 3, 0.1);
+        EXPECT_EQ(m.channel("Data").capacity(), 15);
+    }
+
+    TEST(RANDOM_FILTER, BASIC1){
         srand (0);
         elma::Manager m;
         Random r("random numbers");
@@ -120,6 +330,103 @@ namespace {
         EXPECT_NEAR(f.value(),  1.90764, 0.01);
     }
 
+    TEST(RANDOM_FILTER, BASIC2){
+        srand (23);
+        elma::Manager m;
+        Random r("random numbers");
+        Filter f("filter", vector<double>{0.8, 0.6, 0.4, 0.2});
+        elma::Channel data("link");
+
+        m.schedule(r, MS(10))
+        .schedule(f, MS(10))
+        .add_channel(data)
+        .init();
+        m.run(MS(50)).stop();
+        EXPECT_NEAR(f.value(),  1.18068, 0.01);
+        m.run(MS(50)).stop();
+        EXPECT_NEAR(f.value(),  0.694626, 0.01);
+    }
+
+    TEST(RANDOM_FILTER, BASIC3){
+        srand (77);
+        elma::Manager m;
+        Random r("random numbers");
+        Filter f("filter", vector<double>{2, 1, 0, -1, -2});
+        elma::Channel data("link");
+
+        m.schedule(r, MS(10))
+        .schedule(f, MS(10))
+        .add_channel(data)
+        .init();
+        m.run(MS(60)).stop();
+        EXPECT_NEAR(f.value(),  1.98004, 0.01);
+        m.run(MS(20)).stop();
+        EXPECT_NEAR(f.value(),  0.498157, 0.01);
+    }
+
+    TEST(RANDOM_FILTER, EXTEND1){
+        srand (0);
+        elma::Manager m;
+        Random r("random numbers");
+        Filter f("filter", vector<double>{0.25, 0.25, 0.25, 0.25});
+        elma::Channel data("link", 2);  // original size is only 2
+
+        m.schedule(r, MS(10))
+        .schedule(f, MS(10))
+        .add_channel(data);
+        EXPECT_EQ(m.channel("link").capacity(), 2);
+        m.init();
+        EXPECT_GE(m.channel("link").capacity(), 2);
+        m.run(MS(50)).stop();
+        EXPECT_NEAR(f.value(),  0.704027, 0.01);
+        m.run(MS(20)).stop();
+        EXPECT_NEAR(f.value(),  0.721892, 0.01);
+        m.run(MS(20)).stop();
+        EXPECT_NEAR(f.value(),  0.672684, 0.01);
+    }
+
+    TEST(RANDOM_FILTER, EXTEND2){
+        srand (0);
+        elma::Manager m;
+        Random r("random numbers");
+        Filter f("filter", vector<double>{0.5, 0.3, 0.2});
+        elma::Channel data("link", 2); // original size is only 2
+
+        m.schedule(r, MS(10))
+        .schedule(f, MS(10))
+        .add_channel(data);
+        EXPECT_EQ(m.channel("link").capacity(), 2);
+        m.init();
+        EXPECT_GE(m.channel("link").capacity(), 2);
+        m.run(MS(100)).stop();
+        EXPECT_NEAR(f.value(),  0.436401, 0.01);
+        m.run(MS(20)).stop();
+        EXPECT_NEAR(f.value(),  0.513963, 0.01);
+        m.run(MS(20)).stop();
+        EXPECT_NEAR(f.value(),  0.460444, 0.01);
+    }
+
+    typedef std::map<string, std::tuple<string, double, double, int>> info_type;
+    void ps_test( info_type& info,  info_type& ans){
+        //std::cout.precision(3);
+        //std::cout<<"======================================="<<std::endl;
+        for(auto x: ans){
+            string key = x.first;
+            EXPECT_EQ(std::get<0>(info[key]), std::get<0>(x.second));            // status
+            EXPECT_NEAR(std::get<1>(info[key]), std::get<1>(x.second), 10.0);    // latest_update
+            EXPECT_NEAR(std::get<2>(info[key]), std::get<2>(x.second), 10.0);    // delta
+            EXPECT_NEAR(std::get<3>(info[key]), std::get<3>(x.second), 1);       // num_updates
+            /*
+            std::cout<<key<<" || "
+                     <<std::get<0>(info[key])<<" || "       
+                     <<std::get<1>(info[key])<<" || "
+                     <<std::get<2>(info[key])<<" || "
+                     <<std::get<3>(info[key])<<std::endl;
+            */
+        }
+        //std::cout<<"======================================="<<std::endl;
+    }
+
     class  Tester: public elma::Process {
       public: 
         Tester(string name) : Process(name) {}
@@ -129,27 +436,7 @@ namespace {
         void stop() {}
     };
 
-    typedef std::map<string, std::tuple<string, double, double, int>> info_type;
-    void ps_test( info_type& info,  info_type& ans){
-        //std::cout.precision(3);
-        //std::cout<<"======================================="<<std::endl;
-        for(auto x: ans){
-            string key = x.first;
-            EXPECT_EQ(std::get<0>(info[key]), std::get<0>(x.second));
-            EXPECT_NEAR(std::get<1>(info[key]), std::get<1>(x.second), 10.0);
-            EXPECT_NEAR(std::get<2>(info[key]), std::get<2>(x.second), 10.0);
-            EXPECT_NEAR(std::get<3>(info[key]), std::get<3>(x.second), 1);
-            
-            //std::cout<<key<<" || "
-            //         <<std::get<0>(info[key])<<" || "
-            //         <<std::get<1>(info[key])<<" || "
-            //         <<std::get<2>(info[key])<<" || "
-            //         <<std::get<3>(info[key])<<std::endl;
-        }
-        //std::cout<<"======================================="<<std::endl;
-    }
-
-    TEST(PS, BASIC){
+    TEST(PS, BASIC1){
         elma::Manager m;
         Tester james("james");
         Tester lily("lily");
@@ -167,178 +454,96 @@ namespace {
         ps_test(info, ans);
     }
 
+    TEST(PS, BASIC2){
+        elma::Manager m;
+        Tester andy("andy");
+        Tester bob("bob");
+        Tester cathy("cathy");
+
+        m.schedule(andy, MS(10))
+        .schedule(bob, MS(100))
+        .schedule(cathy, MS(1000));
+
+        std::map<string, std::tuple<string, double, double, int>> ans({
+            {"andy", std::make_tuple("STOPPED", 1000.0, 10.0, 100)},
+            {"bob", std::make_tuple("STOPPED", 1000.0, 100.0, 10)},
+            {"cathy", std::make_tuple("STOPPED", 1000.0, 1000.0, 1)}
+        });
+        
+        m.init().run(MS(1010));
+        auto info = m.ps();
+        ps_test(info, ans);
+    }
+
+    TEST(PS, BASIC3){
+        elma::Manager m;
+        Tester a("a");
+        Tester b("b");
+        Tester c("c");
+        Tester d("d");
+        Tester e("e");
+
+        m.schedule(a, MS(10))
+        .schedule(b, MS(20))
+        .schedule(c, MS(40))
+        .schedule(d, MS(60))
+        .schedule(e, MS(120));
+
+        std::map<string, std::tuple<string, double, double, int>> ans({
+            {"a", std::make_tuple("STOPPED", 120.0, 10.0, 12)},
+            {"b", std::make_tuple("STOPPED", 120.0, 20.0, 6)},
+            {"c", std::make_tuple("STOPPED", 120.0, 40.0, 3)},
+            {"d", std::make_tuple("STOPPED", 120.0, 60.0, 2)},
+            {"e", std::make_tuple("STOPPED", 120.0, 120.0, 1)},
+        });
+        
+        m.init().run(MS(130));
+        auto info = m.ps();
+        ps_test(info, ans);
+    }
+
+    TEST(PS, BASIC4){
+        elma::Manager m;
+        Tester a("a");
+        Tester b("b");
+        Tester c("c");
+
+        m.schedule(a, MS(30))
+        .schedule(b, MS(50))
+        .schedule(c, MS(70));
+
+        std::map<string, std::tuple<string, double, double, int>> ans({
+            {"a", std::make_tuple("STOPPED", 990.0, 30.0, 33)},
+            {"b", std::make_tuple("STOPPED", 1000.0, 50.0, 20)},
+            {"c", std::make_tuple("STOPPED", 980.0, 70.0, 14)}
+        });
+        
+        m.init().run(MS(1010));
+        auto info = m.ps();
+        ps_test(info, ans);
+    }
+    
+    TEST(PS, BASIC5){
+        elma::Manager m;
+        Tester a("a");
+        Tester b("b");
+        Tester c("c");
+        Tester d("d");
+
+        m.schedule(a, MS(256))
+        .schedule(b, MS(80))
+        .schedule(c, MS(100))
+        .schedule(d, MS(64));
+
+        std::map<string, std::tuple<string, double, double, int>> ans({
+            {"a", std::make_tuple("STOPPED", 512.0, 256.0, 2)},
+            {"b", std::make_tuple("STOPPED", 480.0, 80.0, 6)},
+            {"c", std::make_tuple("STOPPED", 500.0, 100.0, 5)},
+            {"d", std::make_tuple("STOPPED", 512.0, 64.0, 8)}
+        });
+        
+        m.init().run(MS(530));
+        auto info = m.ps();
+        ps_test(info, ans);
+    }
 }
-
-
-
-/* 
-#include "gtest/gtest.h"
-
-#include <string>
-#include <iostream>
-#include <ratio>
-#include <thread>
-#include <vector>
-
-#include "elma.h"
-
-namespace {
-
-    using std::string;
-    using namespace std::chrono;
-    using std::vector;
-
-    #define MS(__ms__) high_resolution_clock::duration(milliseconds(__ms__))
-
-    TEST(RATIO,RATIO) {
-      typedef std::ratio<2,3> two_thirds;
-      std::cout << two_thirds::num << "/" <<two_thirds::den << "\n";
-      typedef std::chrono::duration<int,std::milli> milliseconds_type;
-
-      auto x = milliseconds_type(10);   
-      std::cout << "ten ms = " << x.count() << "ms\n";
-
-      typedef std::chrono::duration<double,std::ratio<1,1>> seconds_type;
-      auto y = seconds_type(x);
-      std::cout << "ten ms = " << y.count() << "s\n";
-
-      auto w = x+y;
-      auto z = y+y;
-      std::cout << "x+y = " << w.count() << "ms\n";
-      std::cout << "y+x = " << z.count() << "s\n";
-
-      auto zero = seconds_type::zero();
-      ASSERT_EQ(0, zero.count());
-
-    }
-
-    TEST(CLOCK,CLOCK) {
-      high_resolution_clock::time_point t = high_resolution_clock::now();
-      std::cout << t.time_since_epoch().count() << " ns since 1970\n";
-      typedef std::chrono::duration<double,std::ratio<3600*24*365,1>> years;
-      auto y = years(t.time_since_epoch());
-      std::cout << y.count() << " hours since 1970\n";
-    }
-
-    TEST(CLOCK,DIFF) {
-      high_resolution_clock::time_point t1, t2;
-      t1 = high_resolution_clock::now();
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
-      t2 = high_resolution_clock::now();
-      std::cout << (t2 - t1).count() << " ns\n";      
-    }
-
-    class MyProcess : public elma::Process {
-      public:
-        MyProcess(std::string name) : Process(name) {}
-        void init() {}
-        void start() {}
-        void update() { 
-          std::cout << name() << ": " 
-                    << milli_time()
-                    << "ms\n";
-        }
-        void stop() {}
-    };
-
-    TEST(Manager,Schedule) {
-      elma::Manager m;
-      MyProcess p("A"), q("B");
-      m.schedule(p, MS(1))
-       .schedule(q, MS(5))
-       .init()
-       .run(MS(11));
-       ASSERT_EQ(p.num_updates(), 10);
-       ASSERT_EQ(q.num_updates(), 2);
-    }
-
-    class OpenLoopCar : public elma::Process {
-      public:
-        OpenLoopCar(std::string name) : Process(name) {}
-        void init() {}
-        void start() {
-          velocity = 0;
-        }
-        void update() {
-          double u = 1;
-          velocity += delta() * ( - k * velocity + u ) / m;
-          std::cout << "t: " << milli_time() << " ms\tv: " << velocity << " m/s\n";
-        }
-        void stop() {}
-      private:
-        double velocity;
-        const double k = 0.02;
-        const double m = 100;
-    };
-
-    TEST(Car,OpenLoop) {
-      elma::Manager m;
-      OpenLoopCar car("Toyota");
-      m.schedule(car, MS(10))
-       .init()
-       .run(MS(100));
-    }    
-
-    class ControllableCar : public elma::Process {
-      public:
-        ControllableCar(std::string name) : Process(name) {}
-        void init() {}
-        void start() {
-          velocity = 0;
-        }
-        void update() {
-          if ( channel("Throttle").nonempty() ) {
-            force = channel("Throttle").latest();
-          }
-          velocity += ( delta() / 1000 ) * ( - k * velocity + force ) / m;
-          channel("Velocity").send(velocity);
-          std::cout << "t: "  << milli_time() << " ms\t" 
-                    << " u: " << force        << " N\t"
-                    << " v: " << velocity     << " m/s\n";
-        }
-        void stop() {}
-      private:
-        double velocity;
-        double force;
-        const double k = 0.02;
-        const double m = 1000;
-    };  
-
-    class CruiseControl : public elma::Process {
-      public:
-        CruiseControl(std::string name) : Process(name) {}
-        void init() {}
-        void start() {}
-        void update() {
-          if ( channel("Velocity").nonempty() ) {
-            speed = channel("Velocity").latest();
-          }
-          channel("Throttle").send(-KP*(speed - desired_speed));
-        }
-        void stop() {}
-      private:
-        double speed = 0;
-        const double desired_speed = 50.0,
-                     KP = 314.15;
-                     vector<double> _v;
-    };   
-
-    TEST(Car,ClosedLoop) {
-
-      elma::Manager m;
-
-      ControllableCar car("Car");
-      CruiseControl cc("Control");
-      elma::Channel throttle("Throttle");
-      elma::Channel velocity("Velocity");
-
-      m.schedule(car, MS(10))
-       .schedule(cc, MS(10))
-       .add_channel(throttle)
-       .add_channel(velocity)
-       .init()
-       .run(MS(10000));
-
-    }
-
-}*/
